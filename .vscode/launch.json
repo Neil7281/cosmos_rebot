@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Fix Cameras",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/00_fix_cameras.py",
+      "args": ["${workspaceFolder}/workdir/molmo_act2_motor_box"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Prepare Dataset",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/01_prepare_dataset.py",
+      "args": [
+        "--dataset-dir", "${workspaceFolder}/workdir/molmo_act2_motor_box",
+        "--output-dir",  "${workspaceFolder}/workdir/cosmos_dataset"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Run Inference",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/scripts/03_run_inference.py",
+      "args": [
+        "--mode",  "policy",
+        "--image", "${workspaceFolder}/workdir/frame.png"
+      ],
+      "console": "integratedTerminal"
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "▶  Full Training Run",
+      "type": "shell",
+      "command": "bash scripts/launch_training.sh",
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "new" },
+      "problemMatcher": []
+    },
+    {
+      "label": "🔧 Fix Camera Swap Only",
+      "type": "shell",
+      "command": "python scripts/00_fix_cameras.py ${input:datasetDir}",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "📦 Prepare Dataset Only",
+      "type": "shell",
+      "command": "python scripts/01_prepare_dataset.py --dataset-dir ${input:datasetDir} --output-dir ${workspaceFolder}/workdir/cosmos_dataset",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "🤖 Run Inference (policy mode)",
+      "type": "shell",
+      "command": "python scripts/03_run_inference.py --mode policy --image ${input:imagePath}",
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "datasetDir",
+      "description": "Path to the downloaded dataset",
+      "default": "${workspaceFolder}/workdir/molmo_act2_motor_box",
+      "type": "promptString"
+    },
+    {
+      "id": "imagePath",
+      "description": "Path to wrist camera frame (PNG/JPG)",
+      "default": "${workspaceFolder}/workdir/frame.png",
+      "type": "promptString"
+    }
+  ]
+}

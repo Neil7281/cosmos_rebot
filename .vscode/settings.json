@@ -1,0 +1,12 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/workdir/cosmos-framework/.venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+  "editor.formatOnSave": true,
+  "files.associations": {
+    "*.toml": "toml",
+    "*.sh": "shellscript"
+  },
+  "terminal.integrated.env.linux": {
+    "PYTHONPATH": "${workspaceFolder}"
+  }
+}

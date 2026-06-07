@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.debugpy",
+    "ms-python.black-formatter",
+    "tamasfe.even-better-toml",
+    "timonwong.shellcheck",
+    "mhutchie.git-graph"
+  ]
+}

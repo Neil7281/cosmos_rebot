@@ -1,0 +1,7 @@
+# Bootstrap dependencies — installed on the GPU machine before the launch script runs.
+# The full training environment is managed by uv inside cosmos-framework.
+
+huggingface_hub>=0.23.0
+pandas>=2.0.0
+pyarrow>=14.0.0
+requests>=2.31.0
