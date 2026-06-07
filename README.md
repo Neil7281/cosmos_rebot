@@ -28,7 +28,7 @@ already-completed steps are skipped automatically.
 ### Step 0 — Clone and configure
 
 ```bash
-git clone <this-repo-url> cosmos_rebot && cd cosmos_rebot
+git clone https://github.com/Neil7281/cosmos_rebot && cd cosmos_rebot
 
 # Install the bootstrap pip packages (huggingface_hub, uv, pandas, pyarrow)
 pip install -r requirements.txt
@@ -219,7 +219,8 @@ cd ./workdir/cosmos-framework
     --model-path outputs/rebot_motor_box_nano/latest \
     --port 8080
 
-# In a second terminal — get a 16-step action chunk from a camera frame
+# In a second terminal — 
+get a 16-step action chunk from a camera frame
 python scripts/03_run_inference.py \
     --mode  policy \
     --image ./workdir/frame.png
