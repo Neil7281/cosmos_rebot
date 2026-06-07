@@ -19,26 +19,122 @@ file so the fix is idempotent.
 
 ---
 
-## Quick start
+## Step-by-step: training the model
+
+Run these in order on the GPU machine. Every step is idempotent, so if
+something fails partway through you can fix it and re-run from the top —
+already-completed steps are skipped automatically.
+
+### Step 0 — Clone and configure
 
 ```bash
-# 1. Clone / download this folder and open it in VS Code
+git clone <this-repo-url> cosmos_rebot && cd cosmos_rebot
 
-# 2. Install the bootstrap pip packages on the GPU machine
-pip install huggingface_hub uv pandas pyarrow
+# Install the bootstrap pip packages (huggingface_hub, uv, pandas, pyarrow)
+pip install -r requirements.txt
 
-# 3. Configure
+# Configure
 cp .env.example .env
-#   → set N_GPUS and CUDA_GROUP in .env
+#   → edit .env and set N_GPUS (≥ 2) and CUDA_GROUP (cu128 or cu130)
+```
 
-# 4. Run everything (download → fix → convert → install → train)
+### Step 1 — Download the dataset (~300 MB)
+
+```bash
+python -c "
+from huggingface_hub import snapshot_download
+snapshot_download(
+    repo_id='manavgoel4/molmo_act2_motor_box',
+    repo_type='dataset',
+    local_dir='./workdir/molmo_act2_motor_box',
+)
+"
+```
+
+### Step 2 — Fix the camera-swap bug
+
+```bash
+python scripts/00_fix_cameras.py ./workdir/molmo_act2_motor_box
+```
+
+### Step 3 — Convert LeRobot v3 → cosmos-framework JSONL
+
+```bash
+pip install pandas pyarrow --quiet
+python scripts/01_prepare_dataset.py \
+    --dataset-dir ./workdir/molmo_act2_motor_box \
+    --output-dir  ./workdir/cosmos_dataset
+
+export DATASET_PATH=./workdir/cosmos_dataset
+```
+
+### Step 4 — Clone and install NVIDIA/cosmos-framework
+
+```bash
+GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/NVIDIA/cosmos-framework.git ./workdir/cosmos-framework
+cd ./workdir/cosmos-framework
+
+# Install uv if you don't already have it
+curl -LsSf https://astral.sh/uv/install.sh | sh
+export PATH="$HOME/.cargo/bin:$PATH"
+
+# Install training dependencies (use cu128-train or cu130-train to match your drivers)
+GIT_LFS_SKIP_SMUDGE=1 uv sync --all-extras --group=cu128-train
+cd -
+```
+
+### Step 5 — Download Cosmos 3 Nano weights and convert to DCP (~30 GB, 30–60 min)
+
+```bash
+./workdir/cosmos-framework/.venv/bin/python -m cosmos_framework.scripts.convert_model_to_dcp \
+    -o ./workdir/checkpoints/Cosmos3-Nano \
+    --checkpoint-path Cosmos3-Nano
+
+export BASE_CHECKPOINT_PATH=./workdir/checkpoints/Cosmos3-Nano
+```
+
+### Step 6 — Download the Wan 2.2 VAE / video tokenizer (~5 GB)
+
+```bash
+python -c "
+from huggingface_hub import hf_hub_download
+hf_hub_download(
+    repo_id='Wan-AI/Wan2.2-TI2V-5B',
+    filename='Wan2.2_VAE.pth',
+    local_dir='./workdir/checkpoints/wan22_vae',
+)
+"
+
+export WAN_VAE_PATH=./workdir/checkpoints/wan22_vae/Wan2.2_VAE.pth
+```
+
+### Step 7 — Launch Vision SFT training
+
+```bash
+cd ./workdir/cosmos-framework
+
+.venv/bin/torchrun \
+    --standalone \
+    --nproc_per_node="$N_GPUS" \
+    --master_port=29500 \
+    -m cosmos_framework.scripts.train \
+    --sft-toml=../../examples/toml/sft_config/rebot_motor_box_nano.toml
+```
+
+Checkpoints land in `./workdir/cosmos-framework/outputs/rebot_motor_box_nano/`.
+
+---
+
+### Shortcut — run all 7 steps at once
+
+```bash
 bash scripts/launch_training.sh
 ```
 
-That's it. The script is re-entrant — re-running it skips already-completed
-steps.
+This runs Steps 1–7 above in order and skips anything already completed —
+handy for first-time setup or for resuming after an interruption.
 
-Or use **VS Code Tasks** (`Ctrl+Shift+B`) to run individual steps.
+Or use **VS Code Tasks** (`Ctrl+Shift+B`) to run individual steps from the editor.
 
 ---
 
