@@ -161,3 +161,31 @@ cd "$FRAMEWORK_DIR"
 
 log "✓  Training complete."
 log "   Checkpoints saved to: $FRAMEWORK_DIR/outputs/rebot_motor_box_nano/"
+
+# ── Step 8 — Push checkpoint to Hugging Face Hub (optional) ──────────────────
+if [ -n "${HF_PUSH_REPO:-}" ]; then
+  CKPT_OUT_DIR="$FRAMEWORK_DIR/outputs/rebot_motor_box_nano/latest"
+  log "Step 8  Pushing checkpoint to https://huggingface.co/$HF_PUSH_REPO …"
+  [ -n "${HF_TOKEN:-}" ] || die "HF_PUSH_REPO is set but HF_TOKEN is missing — add it to .env"
+  [ -d "$CKPT_OUT_DIR" ] || die "Checkpoint dir not found: $CKPT_OUT_DIR"
+
+  HF_PUSH_REPO="$HF_PUSH_REPO" HF_TOKEN="$HF_TOKEN" CKPT_OUT_DIR="$CKPT_OUT_DIR" python -c "
+import os
+from huggingface_hub import HfApi
+
+api = HfApi(token=os.environ['HF_TOKEN'])
+repo_id = os.environ['HF_PUSH_REPO']
+
+api.create_repo(repo_id=repo_id, repo_type='model', exist_ok=True)
+api.upload_folder(
+    folder_path=os.environ['CKPT_OUT_DIR'],
+    repo_id=repo_id,
+    repo_type='model',
+    commit_message='Upload rebot_motor_box_nano checkpoint',
+)
+print(f'Uploaded to https://huggingface.co/{repo_id}')
+"
+  log "✓  Push complete — https://huggingface.co/$HF_PUSH_REPO"
+else
+  log "Step 8  HF_PUSH_REPO not set — skipping Hub push"
+fi

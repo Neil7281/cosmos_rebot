@@ -125,13 +125,23 @@ Checkpoints land in `./workdir/cosmos-framework/outputs/rebot_motor_box_nano/`.
 
 ---
 
-### Shortcut — run all 7 steps at once
+### Step 8 — Push checkpoint to Hugging Face Hub (optional)
+
+Set `HF_PUSH_REPO=<username>/<model-name>` and `HF_TOKEN=hf_xxxx` in `.env`
+and `launch_training.sh` will upload the trained checkpoint
+(`outputs/rebot_motor_box_nano/latest`) to that Hub model repo after training
+completes (creating the repo if it doesn't exist yet). Leave `HF_PUSH_REPO`
+unset to skip this step.
+
+---
+
+### Shortcut — run all 8 steps at once
 
 ```bash
 bash scripts/launch_training.sh
 ```
 
-This runs Steps 1–7 above in order and skips anything already completed —
+This runs Steps 1–8 above in order and skips anything already completed —
 handy for first-time setup or for resuming after an interruption.
 
 Or use **VS Code Tasks** (`Ctrl+Shift+B`) to run individual steps from the editor.
@@ -163,7 +173,7 @@ cosmos_rebot/
 ├── scripts/
 │   ├── 00_fix_cameras.py      Fix camera-swap bug
 │   ├── 01_prepare_dataset.py  Convert LeRobot v3 → cosmos JSONL
-│   ├── launch_training.sh     One-shot full pipeline (Steps 1–7)
+│   ├── launch_training.sh     One-shot full pipeline (Steps 1–8)
 │   └── 03_run_inference.py    Call trained model at inference time
 │
 ├── examples/
